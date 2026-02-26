@@ -1,11 +1,14 @@
 # Rust Sitter - Otonoma fork
+
 **This project is a fork of [rust-sitter](https://github.com/hydro-project/rust-sitter). It has been heavily
 modified in many breaking ways.**
 
 Rust Sitter makes it easy to create efficient parsers in Rust by leveraging the [Tree Sitter](https://tree-sitter.github.io/tree-sitter/) parser generator. With Rust Sitter, you can define your entire grammar with annotations on idiomatic Rust code, and let macros generate the parser and type-safe bindings for you!
 
 ## Installation
+
 First, add Rust/Tree Sitter to your `Cargo.toml`:
+
 ```toml
 [dependencies]
 rust-sitter = { git = "https://github.com/otonoma/rust-sitter" }
@@ -27,6 +30,7 @@ fn main() {
 ```
 
 ## Defining a Grammar
+
 Now that we have Rust Sitter added to our project, we can define our grammar. Rust Sitter grammars are defined in Rust modules. First, we create a module file for the grammar in `src/grammar/mod.rs`. Note, this can be any module, however,
 due to various quirks with the build system it is required that you have one grammar per module, and all types
 in the grammar are defined within it, or a submodule of the module.
@@ -120,9 +124,11 @@ grammar::Expr::parse("1+2+3").into_result() = Ok(Add(
 ```
 
 ## Type Annotations
+
 Rust Sitter supports a number of annotations that can be applied to type and fields in your grammar. These annotations can be used to control how the parser behaves, and how the resulting AST is constructed.
 
 ### `#[language]`
+
 This annotation marks the entrypoint for parsing, and determines which AST type will be returned from parsing. Only one type in the grammar can be marked as the entrypoint.
 
 ```rust
@@ -131,9 +137,10 @@ This annotation marks the entrypoint for parsing, and determines which AST type 
 struct Code {
     ...
 }
-````
+```
 
 ### `#[extras(...)]`
+
 This annotation can be used on the `#[language]` rule to specify a list of extras. These extras are specified
 using the same DSL as `#[leaf(...)]` and `#[text(...)]`. These rules are inserted to the `extras` array in the
 grammar.
@@ -150,7 +157,9 @@ struct Code {
 ```
 
 ## Field Annotations
+
 ### `#[leaf(...)]` and `#[text(...)]`
+
 The `#[leaf(...)]` annotation can be used to define a leaf node in the AST.
 `#[text(...)]` is similar, but it does not create a named node in the grammar and cannot be
 extracted. It must always be assigned to `()`.
@@ -158,11 +167,12 @@ extracted. It must always be assigned to `()`.
 `leaf` and `text` take an input that looks like the [tree sitter
 DSL](https://tree-sitter.github.io/tree-sitter/creating-parsers/2-the-grammar-dsl.html). The supported rules
 currently are:
-* `choice`
-* `optional`
-* `seq`
-* `re` or `pattern` to specify a regular expression
-* literal text
+
+- `choice`
+- `optional`
+- `seq`
+- `re` or `pattern` to specify a regular expression
+- literal text
 
 Others can be added in the future as needed.
 
@@ -183,15 +193,19 @@ enum SmallDigit {
 ```
 
 ### `#[prec(...)]` / `#[prec_left(...)]` / `#[prec_right(...)]` / `#[prec_dynamic(...)]`
+
 This annotation can be used to define a non/left/right-associative operator. This annotation takes a single parameter, which is the precedence level of the operator (higher binds more tightly).
 
 ### `#[immediate]`
+
 Usually, whitespace is optional before each token. This attribute means that the token will only match if there is no whitespace.
 
 ### `#[skip(...)]`
+
 This annotation can be used to define a field that does not correspond to anything in the input string, such as some metadata. This annotation takes a single parameter, which is the value that should be used to populate that field at runtime.
 
 ### `#[word]`
+
 This annotation marks the field as a Tree Sitter [word](https://tree-sitter.github.io/tree-sitter/creating-parsers#keywords), which is useful when handling errors involving keywords. Like `#[extras]`, the `#[word]` is specified on the `#[language]` implementation:
 
 ```rust
@@ -208,6 +222,7 @@ pub struct Ident;
 ```
 
 ## Partial AST and Errors
+
 rust-sitter, like tree-sitter, can produce a partial AST along with its errors. Calling `Language::parse` will
 produce a `ParseResult` object which includes as much of the AST as it was able to extract, as well as a `Vec`
 of all of the parsing errors encountered. This is useful for language servers and other contexts which can
@@ -215,9 +230,11 @@ make use of a partial AST. Currently this may not produce the _maximal_ AST, but
 in the future.
 
 ## Special Types
+
 Rust Sitter has a few special types that can be used to define more complex grammars.
 
 ### `Vec<T>`
+
 To parse repeating structures, you can use a `Vec<T>` to parse a list of `T`s. Note that the `Vec<T>` type **cannot** be wrapped in another `Vec` (create additional structs if this is necessary). There are two special attributes that can be applied to a `Vec` field to control the parsing behavior.
 
 The `#[sep_by(...)]` attribute can be used to specify a separator between elements of the
@@ -243,6 +260,7 @@ pub struct CommaSeparatedExprs {
 ```
 
 ### `Option<T>`
+
 To parse optional structures, you can use an `Option<T>` to parse a single `T` or nothing. Like `Vec`, the `Option<T>` type **cannot** be wrapped in another `Option` (create additional structs if this is necessary). For example, we can make the list elements in the previous example optional so we can parse strings like `1,,2`:
 
 ```rust
@@ -253,6 +271,7 @@ pub struct CommaSeparatedExprs {
 ```
 
 ### `rust_sitter::Spanned<T>`
+
 When using Rust Sitter to power diagnostic tools, it can be helpful to access spans marking the sections of text corresponding to a parsed node. To do this, you can use the `Spanned<T>` type, which captures the underlying parsed `T` and a pair of indices for the start (inclusive) and end (exclusive) of the corresponding substring. `Spanned` types can be used anywhere, and do not affect the parsing logic. For example, we could capture the spans of the expressions in our previous example:
 
 ```rust
@@ -263,4 +282,57 @@ pub struct CommaSeparatedExprs {
 ```
 
 ### `Box<T>`
+
 Boxes are automatically constructed around the inner type when parsing, but Rust Sitter doesn't do anything extra beyond that.
+
+## TextMate Grammar Generation
+
+Rust Sitter can also generate `.tmLanguage.json` grammars for legacy syntax highlighters (VS Code, Sublime Text, etc.) from the same grammar definitions used for Tree Sitter parsing.
+
+### Setup
+
+Add `TextMateBuilder` to your `build.rs` alongside the existing parser generation:
+
+```rust
+fn main() {
+    println!("cargo:rerun-if-changed=src");
+
+    // Generate Tree Sitter parser (existing)
+    rust_sitter_tool::build_parser("src/grammar/mod.rs");
+
+    // Generate TextMate grammar (new)
+    if let Some(textmate) = rust_sitter_tool::TextMateBuilder::default()
+        .scope_name("my-language")
+        .build("src/grammar/mod.rs")
+    {
+        let out = std::path::PathBuf::from(std::env::var("OUT_DIR").unwrap());
+        std::fs::write(
+            out.join("my-language.tmLanguage.json"),
+            serde_json::to_string_pretty(&textmate).unwrap(),
+        ).unwrap();
+    }
+}
+```
+
+### How It Works
+
+The generator walks the same `Grammar` IR used for Tree Sitter and automatically categorises tokens:
+
+| Grammar Annotation                      | TextMate Scope     |
+| --------------------------------------- | ------------------ |
+| `#[leaf("let")]` / `#[text("keyword")]` | `keyword.control`  |
+| `#[leaf("+")]` / `#[text(";")]`         | `keyword.operator` |
+| `#[leaf(re(r"\d+"))]`                   | `constant.numeric` |
+| `#[leaf(re(r"[a-zA-Z_]\w*"))]`          | `variable.other`   |
+
+Bracket-like delimiter pairs (`()`, `{}`, `[]`) in struct sequences are detected and emitted as TextMate `begin`/`end` rules.
+
+### Custom Scope Name
+
+Use `.scope_name()` to set the TextMate `scopeName` (defaults to the grammar name):
+
+```rust
+TextMateBuilder::default()
+    .scope_name("karu")  // produces scopeName: "source.karu"
+    .build("src/grammar/mod.rs");
+```
