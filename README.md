@@ -11,10 +11,10 @@ First, add Rust/Tree Sitter to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-rust-sitter = { git = "https://github.com/otonoma/rust-sitter" }
+rust-sitter = { git = "https://github.com/benbenbenbenbenben/krust-sitter" }
 
 [build-dependencies]
-rust-sitter-tool = { git = "https://github.com/otonoma/rust-sitter" }
+rust-sitter-tool = { git = "https://github.com/benbenbenbenbenben/krust-sitter" }
 ```
 
 The first step is to configure your `build.rs` to compile and link the generated Tree Sitter parser:
