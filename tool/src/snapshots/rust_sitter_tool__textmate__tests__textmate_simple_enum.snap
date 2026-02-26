@@ -1,0 +1,36 @@
+---
+source: tool/src/textmate.rs
+assertion_line: 396
+expression: "serde_json::to_string_pretty(&textmate).unwrap()"
+---
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Expr",
+  "scopeName": "source.Expr",
+  "patterns": [
+    {
+      "include": "#operators"
+    },
+    {
+      "include": "#numbers"
+    }
+  ],
+  "repository": {
+    "operators": {
+      "patterns": [
+        {
+          "match": "!",
+          "name": "keyword.operator.Expr"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "match": "\\d+",
+          "name": "constant.numeric.Expr"
+        }
+      ]
+    }
+  }
+}

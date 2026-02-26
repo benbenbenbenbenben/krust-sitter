@@ -1,0 +1,58 @@
+---
+source: tool/src/textmate.rs
+assertion_line: 524
+expression: "serde_json::to_string_pretty(&textmate).unwrap()"
+---
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Program",
+  "scopeName": "source.Program",
+  "patterns": [
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#operators"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#identifiers"
+    }
+  ],
+  "repository": {
+    "keywords": {
+      "patterns": [
+        {
+          "match": "\\b(?:if|else)\\b",
+          "name": "keyword.control.Program"
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "match": ";|\\(|\\)|\\{|\\}",
+          "name": "keyword.operator.Program"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "match": "\\d+",
+          "name": "constant.numeric.Program"
+        }
+      ]
+    },
+    "identifiers": {
+      "patterns": [
+        {
+          "match": "[a-zA-Z_][a-zA-Z0-9_]*",
+          "name": "variable.other.Program"
+        }
+      ]
+    }
+  }
+}

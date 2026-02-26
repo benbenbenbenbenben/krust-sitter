@@ -1,0 +1,58 @@
+---
+source: tool/src/textmate.rs
+assertion_line: 449
+expression: "serde_json::to_string_pretty(&textmate).unwrap()"
+---
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Expression",
+  "scopeName": "source.Expression",
+  "patterns": [
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#operators"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#identifiers"
+    }
+  ],
+  "repository": {
+    "keywords": {
+      "patterns": [
+        {
+          "match": "\\b(?:let|print)\\b",
+          "name": "keyword.control.Expression"
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "match": "-|\\*|=|\\(|,|\\)",
+          "name": "keyword.operator.Expression"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "match": "\\d+",
+          "name": "constant.numeric.Expression"
+        }
+      ]
+    },
+    "identifiers": {
+      "patterns": [
+        {
+          "match": "[a-zA-Z_][a-zA-Z_0-9]*",
+          "name": "variable.other.Expression"
+        }
+      ]
+    }
+  }
+}

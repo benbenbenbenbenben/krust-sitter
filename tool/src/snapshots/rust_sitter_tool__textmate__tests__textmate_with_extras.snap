@@ -1,0 +1,25 @@
+---
+source: tool/src/textmate.rs
+assertion_line: 549
+expression: "serde_json::to_string_pretty(&textmate).unwrap()"
+---
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Expression",
+  "scopeName": "source.Expression",
+  "patterns": [
+    {
+      "include": "#numbers"
+    }
+  ],
+  "repository": {
+    "numbers": {
+      "patterns": [
+        {
+          "match": "\\d+",
+          "name": "constant.numeric.Expression"
+        }
+      ]
+    }
+  }
+}

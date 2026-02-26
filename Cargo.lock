@@ -703,6 +703,7 @@ dependencies = [
  "cc",
  "insta",
  "rust-sitter-common",
+ "rust-sitter-types",
  "serde",
  "serde_json",
  "syn",

@@ -6,6 +6,8 @@ use std::path::{Path, PathBuf};
 
 use tree_sitter_generate::generate_parser_for_grammar;
 
+pub mod textmate;
+
 /// Using the `cc` crate, generates and compiles a C parser with Tree Sitter
 /// for every Rust Sitter grammar found in the given module and recursive
 /// submodules.
@@ -14,6 +16,41 @@ where
     P: AsRef<Path> + ?Sized,
 {
     ParserBuilder::default().build(root_file);
+}
+
+/// Builder for generating TextMate grammars from Rust Sitter grammar definitions.
+///
+/// Similar to `ParserBuilder`, but produces a `.tmLanguage.json` value instead of
+/// a C parser.
+#[derive(Default)]
+pub struct TextMateBuilder {
+    pub scope_name: Option<String>,
+}
+
+impl TextMateBuilder {
+    /// Set a custom scope name (e.g. `"source.karu"`). If not set, the grammar name is used.
+    pub fn scope_name(mut self, scope: impl Into<String>) -> Self {
+        self.scope_name = Some(scope.into());
+        self
+    }
+
+    /// Parse the grammar from the given Rust source file and generate a TextMate grammar.
+    ///
+    /// Returns `Some(json)` if a grammar was found, `None` otherwise.
+    pub fn build<P>(self, root_file: &P) -> Option<serde_json::Value>
+    where
+        P: AsRef<Path> + ?Sized,
+    {
+        let root_file = syn_inline_mod::parse_and_inline_modules(root_file.as_ref());
+        match rust_sitter_common::expansion::generate_grammar(root_file.items) {
+            Err(e) => panic!("{e}"),
+            Ok(None) => None,
+            Ok(Some(grammar)) => {
+                let result = textmate::generate_textmate(&grammar, self.scope_name.as_deref());
+                Some(result)
+            }
+        }
+    }
 }
 
 #[derive(Default)]
